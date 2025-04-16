@@ -1,0 +1,30 @@
+# Project Overview
+
+- I am building Meddit. It is a medical suggestions app.
+- It works like reddit where users can write their remedies or medicines to solve a certain medical condition.
+- Each post is made under a subreddit type "h-issue". Ex: Depression, Headache, Gynocomastia, Sleeplessness (certain issues)
+- Each post can have atmost 3 images
+- Each post can have 0-5 links for medicines shown in a medicine tab under the post
+- Other users can upvote, downvote or comment under such post for reliability.
+- Real doctors are verified and get a badge.
+- Medicines link can be in a post which can redirect a user to buy.
+
+# Personality
+
+- Work like senior developer
+- Write clean and maintainable code
+
+# Techstack
+
+- NextJS
+- Typescript
+- Tailwind
+- NeonDB (PostgreSQL)
+- DrizzleORM
+- Clerk (Auth)
+- Cloudinary to store images (user image, post images)
+
+# Error Fixing Process
+
+- Step 1: Explain the problem in easy terms
+- Step 2: Give me fix for the problem
