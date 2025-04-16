@@ -1,8 +1,16 @@
-import { db } from "./db";
 import "server-only";
+
+import { db } from "./db";
 import { auth } from "@clerk/nextjs/server";
-import { communities, posts, users } from "./db/schema";
-import { desc, eq } from "drizzle-orm";
+import {
+  communities,
+  posts,
+  users,
+  votes,
+  voteTypeEnum,
+  comments,
+} from "./db/schema";
+import { desc, eq, sql, and, count } from "drizzle-orm";
 
 export async function getCurrentUserProfileImageUrl(): Promise<string | null> {
   const { userId } = await auth();
@@ -145,11 +153,17 @@ export async function getPostsByCommunity(
   }
 }
 
-export type PostView = NonNullable<Awaited<ReturnType<typeof getPostView>>>;
+export type PostView = NonNullable<Awaited<ReturnType<typeof getPostView>>> & {
+  voteScore: number;
+  userVote: (typeof voteTypeEnum.enumValues)[number] | null; // 'UPVOTE' | 'DOWNVOTE' | null
+  commentCount: number;
+};
 
 export async function getPostView(postId: number) {
+  const { userId } = await auth();
+
   try {
-    const result = await db.query.posts.findFirst({
+    const postResult = await db.query.posts.findFirst({
       where: eq(posts.id, postId),
       with: {
         author: {
@@ -169,12 +183,40 @@ export async function getPostView(postId: number) {
       },
     });
 
-    if (!result) return null;
+    if (!postResult) return null;
 
-    // TODO: Add vote count and user's vote status later
-    // TODO: Add comment count later
+    const voteScoreResult = await db
+      .select({
+        score: sql<number>`COALESCE(SUM(CASE WHEN ${votes.type} = 'UPVOTE' THEN 1 WHEN ${votes.type} = 'DOWNVOTE' THEN -1 ELSE 0 END), 0)::int`,
+      })
+      .from(votes)
+      .where(eq(votes.postId, postId));
 
-    return result;
+    const voteScore = voteScoreResult[0]?.score ?? 0;
+
+    let userVote: (typeof voteTypeEnum.enumValues)[number] | null = null;
+    if (userId) {
+      const userVoteResult = await db
+        .select({ type: votes.type })
+        .from(votes)
+        .where(and(eq(votes.postId, postId), eq(votes.userId, userId)))
+        .limit(1);
+      userVote = userVoteResult[0]?.type ?? null;
+    }
+
+    const commentCountResult = await db
+      .select({ value: count() })
+      .from(comments)
+      .where(eq(comments.postId, postId));
+
+    const commentCount = commentCountResult[0].value;
+
+    return {
+      ...postResult,
+      voteScore,
+      userVote,
+      commentCount,
+    };
   } catch (error) {
     console.error("Error fetching post view:", error);
     return null;

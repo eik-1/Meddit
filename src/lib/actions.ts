@@ -1,10 +1,16 @@
 "use server";
 
 import { db } from "@/server/db";
-import { communities, posts } from "@/server/db/schema";
+import {
+  comments,
+  communities,
+  posts,
+  votes,
+  voteTypeEnum,
+} from "@/server/db/schema";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { uploadCommunityImage, uploadPostImages } from "@/utils/cloudinary";
 import { redirect } from "next/navigation";
 
@@ -187,6 +193,7 @@ export async function createPost(
 
   // Images
   const rawImageFormData = formData.getAll("images");
+  console.log("rawImageFormData", rawImageFormData);
   const imageFiles = rawImageFormData.filter(
     (f): f is File => f instanceof File && f.size > 0
   );
@@ -297,4 +304,114 @@ export async function createPost(
     };
   }
   redirect(`/app/p/${postId}`);
+}
+
+export async function handleVote(
+  formData: FormData
+): Promise<{ success: boolean; error?: string }> {
+  const { userId } = await auth();
+  if (!userId) {
+    return { success: false, error: "User not authenticated" };
+  }
+
+  const postIdString = formData.get("postId")?.toString();
+  const voteType = formData.get("voteType")?.toString();
+
+  // Manual Validation
+  const postId = Number(postIdString);
+  if (!postIdString || isNaN(postId) || postId <= 0) {
+    return { success: false, error: "Invalid Post ID." };
+  }
+
+  if (!voteType || !voteTypeEnum.enumValues.includes(voteType as any)) {
+    return { success: false, error: "Invalid Vote Type." };
+  }
+  const validatedVoteType =
+    voteType as (typeof voteTypeEnum.enumValues)[number];
+
+  const postPath = `/app/p/${postId}`; // Path to revalidate
+
+  try {
+    const existingVote = await db.query.votes.findFirst({
+      where: and(eq(votes.userId, userId), eq(votes.postId, postId)),
+    });
+
+    if (existingVote) {
+      if (existingVote.type === validatedVoteType) {
+        await db
+          .delete(votes)
+          .where(and(eq(votes.userId, userId), eq(votes.postId, postId)));
+      } else {
+        await db
+          .update(votes)
+          .set({ type: validatedVoteType })
+          .where(and(eq(votes.userId, userId), eq(votes.postId, postId)));
+      }
+    } else {
+      await db.insert(votes).values({
+        userId,
+        postId,
+        type: validatedVoteType,
+      });
+    }
+
+    revalidatePath(postPath);
+    return { success: true };
+  } catch (error) {
+    console.error("Error handling vote:", error);
+    return { success: false, error: "Failed to process vote." };
+  }
+}
+
+export async function addComment(formData: FormData): Promise<{
+  success: boolean;
+  errors?: { text?: string[]; _form?: string[] };
+}> {
+  const { userId } = await auth();
+  if (!userId) {
+    // Changed error structure slightly to match potential client-side handling
+    return { success: false, errors: { _form: ["User not authenticated"] } };
+  }
+
+  const postIdString = formData.get("postId")?.toString();
+  const text = formData.get("text")?.toString().trim();
+
+  // Manual Validation
+  const errors: { text?: string[]; _form?: string[] } = {};
+  const postId = Number(postIdString);
+
+  if (!postIdString || isNaN(postId) || postId <= 0) {
+    // This case might indicate a form setup issue rather than user input error
+    errors._form = ["Invalid Post ID provided."];
+    // Immediately return if post ID is fundamentally wrong
+    return { success: false, errors };
+  }
+
+  if (!text || text.length === 0) {
+    errors.text = ["Comment cannot be empty."];
+  } else if (text.length > 10000) {
+    // Example max length
+    errors.text = ["Comment exceeds maximum length of 10,000 characters."];
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return { success: false, errors };
+  }
+
+  const validatedText = text as string; // Type assertion after validation
+  const postPath = `/app/p/${postId}`;
+
+  try {
+    await db.insert(comments).values({
+      authorId: userId,
+      postId,
+      text: validatedText,
+    });
+
+    revalidatePath(postPath);
+    return { success: true };
+  } catch (error) {
+    console.error("Error adding comment:", error);
+    return { success: false, errors: { _form: ["Failed to add comment."] } };
+  }
 }

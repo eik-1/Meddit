@@ -100,20 +100,9 @@ export default function CreatePostForm({
 
   useEffect(() => {
     let didUnmount = false;
-
-    if (state?.success === true) {
-      setImagePreviews((prev) => {
-        prev.forEach((p) => URL.revokeObjectURL(p.url));
-        return [];
-      });
-      setMedicineLinks([""]);
-      formRef.current?.reset();
-      setFormKey(Date.now());
-      console.log("Post Created Successfully!");
-    } else if (state?.message && !state?.success) {
+    if (state?.message && !state?.success) {
       console.error("Form submission error:", state.errors);
     }
-
     return () => {
       didUnmount = true;
       imagePreviews.forEach((p) => URL.revokeObjectURL(p.url));
@@ -151,6 +140,11 @@ export default function CreatePostForm({
         key={formKey}
         action={formAction}
         className="space-y-6"
+        onSubmit={(e) => {
+          const formData = new FormData(e.currentTarget);
+          const images = formData.getAll("images");
+          console.log("Images before submission:", images);
+        }}
       >
         <div className="flex flex-col justify-center gap-2">
           <Label htmlFor="communityId">
@@ -243,18 +237,17 @@ export default function CreatePostForm({
         {/* Image Upload & Preview */}
         <div className="space-y-1">
           <Label htmlFor="images">Add Images (Optional, Max 3, 4MB each)</Label>
-          <Input
+          <input
             id="images"
             ref={fileInputRef}
             name="images"
             type="file"
-            accept="image/jpeg, image/png, image/jpg"
+            accept="images/*"
             multiple
             onChange={handleFileChange}
-            className={`w-md file:mr-4 file:py-1 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer ${
+            className={`w-md file:mr-4 file:py-1 file:px-4 file:rounded-md file:cursor-pointer file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 ${
               state?.errors?.images ? "border-red-500" : ""
             }`}
-            disabled={imagePreviews.length >= 3}
             aria-invalid={!!state?.errors?.images}
             aria-describedby={
               state?.errors?.images ? "images-error" : undefined
