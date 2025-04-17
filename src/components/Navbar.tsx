@@ -52,8 +52,6 @@ export default async function Navbar(): Promise<JSX.Element> {
           <SignedIn>
             <NavbarUserMenu dbImageUrl={dbImageUrl} />
           </SignedIn>
-
-          <ModeToggle />
         </div>
       </div>
     </header>
