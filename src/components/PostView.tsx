@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import type { PostView } from "@/server/queries";
+import type { CommentWithAuthor, PostView } from "@/server/queries";
 import { formatDistanceToNowStrict } from "date-fns";
 import {
   ArrowLeft,
@@ -16,38 +16,45 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { handleVote } from "@/lib/actions";
+import CommentForm from "./CommentForm";
+import CommentList from "./CommentList";
 
 type PostViewClientProps = {
   post: PostView;
+  comments: CommentWithAuthor[];
 };
 
 function formatTimeAgo(date: Date): string {
   return formatDistanceToNowStrict(date, { addSuffix: true });
 }
 
-export default function PostViewClient({ post }: PostViewClientProps) {
+export default function PostViewClient({
+  post,
+  comments,
+}: PostViewClientProps) {
   const router = useRouter();
   const timeAgo = formatTimeAgo(post.createdAt);
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isPending, startTransition] = useTransition();
 
+  // Image states and handlers
   const hasImages = post.imageUrls && post.imageUrls.length > 0;
   const multipleImages = hasImages && post.imageUrls!.length > 1;
   const hasMedicineLinks =
     post.medicinesLinks && post.medicinesLinks.length > 0;
-
   const handlePreviousImage = () => {
     setCurrentImageIndex((prevIndex) =>
       prevIndex === 0 ? post.imageUrls!.length - 1 : prevIndex - 1
     );
   };
-
   const handleNextImage = () => {
     setCurrentImageIndex((prevIndex) =>
       prevIndex === post.imageUrls!.length - 1 ? 0 : prevIndex + 1
     );
   };
 
+  // Vote handler
   const onVote = (voteType: "UPVOTE" | "DOWNVOTE") => {
     startTransition(async () => {
       const formData = new FormData();
@@ -123,7 +130,7 @@ export default function PostViewClient({ post }: PostViewClientProps) {
               {/* Previous Button */}
               <button
                 onClick={handlePreviousImage}
-                className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black bg-opacity-50 p-2 text-white hover:bg-opacity-75 focus:outline-none"
+                className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black bg-opacity-50 p-2 text-white hover:bg-opacity-75 cursor-pointer focus:outline-none"
                 aria-label="Previous image"
               >
                 <ChevronLeft size={24} />
@@ -131,7 +138,7 @@ export default function PostViewClient({ post }: PostViewClientProps) {
               {/* Next Button */}
               <button
                 onClick={handleNextImage}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black bg-opacity-50 p-2 text-white hover:bg-opacity-75 focus:outline-none"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black bg-opacity-50 p-2 text-white hover:bg-opacity-75 cursor-pointer focus:outline-none"
                 aria-label="Next image"
               >
                 <ChevronRight size={24} />
@@ -211,10 +218,25 @@ export default function PostViewClient({ post }: PostViewClientProps) {
             {post.commentCount} Comment{post.commentCount !== 1 ? "s" : ""}
           </span>
         </div>
+
+        {/* TODO: Add Share Button */}
       </div>
 
-      {/* TODO: Add Comment Input Section */}
-      {/* TODO: Add Comments List Section */}
+      {/* Comment Input Section */}
+      <div className="mt-6 border-t border-gray-200 pt-6 dark:border-gray-700">
+        <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
+          Leave a Comment
+        </h2>
+        <CommentForm postId={post.id} />
+      </div>
+
+      {/* Comments List Section */}
+      <div className="mt-8">
+        <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
+          Comments ({post.commentCount})
+        </h2>
+        <CommentList comments={comments} />
+      </div>
     </div>
   );
 }

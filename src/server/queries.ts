@@ -222,3 +222,30 @@ export async function getPostView(postId: number) {
     return null;
   }
 }
+
+export type CommentWithAuthor = NonNullable<
+  Awaited<ReturnType<typeof getCommentsByPostId>>
+>[number];
+
+export async function getCommentsByPostId(postId: number) {
+  try {
+    const result = await db.query.comments.findMany({
+      where: eq(comments.postId, postId),
+      with: {
+        author: {
+          columns: {
+            id: true,
+            username: true,
+            profileImageUrl: true,
+          },
+        },
+      },
+      orderBy: desc(comments.createdAt),
+    });
+
+    return result;
+  } catch (error) {
+    console.error("Error fetching comments by post ID:", error);
+    return null;
+  }
+}

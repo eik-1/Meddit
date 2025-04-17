@@ -317,7 +317,6 @@ export async function handleVote(
   const postIdString = formData.get("postId")?.toString();
   const voteType = formData.get("voteType")?.toString();
 
-  // Manual Validation
   const postId = Number(postIdString);
   if (!postIdString || isNaN(postId) || postId <= 0) {
     return { success: false, error: "Invalid Post ID." };
@@ -363,34 +362,34 @@ export async function handleVote(
   }
 }
 
-export async function addComment(formData: FormData): Promise<{
+export type AddCommentState = {
   success: boolean;
   errors?: { text?: string[]; _form?: string[] };
-}> {
+} | null;
+
+export async function addComment(
+  prevState: AddCommentState | undefined,
+  formData: FormData
+): Promise<AddCommentState> {
   const { userId } = await auth();
   if (!userId) {
-    // Changed error structure slightly to match potential client-side handling
     return { success: false, errors: { _form: ["User not authenticated"] } };
   }
 
   const postIdString = formData.get("postId")?.toString();
   const text = formData.get("text")?.toString().trim();
 
-  // Manual Validation
   const errors: { text?: string[]; _form?: string[] } = {};
   const postId = Number(postIdString);
 
   if (!postIdString || isNaN(postId) || postId <= 0) {
-    // This case might indicate a form setup issue rather than user input error
     errors._form = ["Invalid Post ID provided."];
-    // Immediately return if post ID is fundamentally wrong
     return { success: false, errors };
   }
 
   if (!text || text.length === 0) {
     errors.text = ["Comment cannot be empty."];
   } else if (text.length > 10000) {
-    // Example max length
     errors.text = ["Comment exceeds maximum length of 10,000 characters."];
   }
 
@@ -398,7 +397,7 @@ export async function addComment(formData: FormData): Promise<{
     return { success: false, errors };
   }
 
-  const validatedText = text as string; // Type assertion after validation
+  const validatedText = text as string;
   const postPath = `/app/p/${postId}`;
 
   try {

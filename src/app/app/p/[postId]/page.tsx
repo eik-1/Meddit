@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getPostView } from "@/server/queries";
+import { getPostView, getCommentsByPostId } from "@/server/queries";
 import PostViewClient from "@/components/PostView";
 
 type PostPageProps = {
@@ -15,10 +15,14 @@ export default async function PostPage({ params }: PostPageProps) {
     notFound();
   }
 
-  const post = await getPostView(postId);
+  const [post, comments] = await Promise.all([
+    getPostView(postId),
+    getCommentsByPostId(postId),
+  ]);
+
   if (!post) {
     notFound();
   }
 
-  return <PostViewClient post={post} />;
+  return <PostViewClient post={post} comments={comments} />;
 }
