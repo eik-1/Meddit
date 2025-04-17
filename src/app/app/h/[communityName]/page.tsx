@@ -33,13 +33,15 @@ export default async function CommunityPage({ params }: Props) {
       {/* Community Header */}
       <div className="mb-6 flex items-center space-x-4 border-b pb-4">
         {community.imageUrl && (
-          <Image
-            src={community.imageUrl}
-            alt={`${community.name} logo`}
-            width={60}
-            height={60}
-            className="rounded-full border"
-          />
+          <div className="relative w-20 h-20 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
+            <Image
+              src={community.imageUrl}
+              alt={`${community.name} logo`}
+              fill
+              sizes="80px"
+              className="object-cover"
+            />
+          </div>
         )}
         <div>
           <h1 className="text-3xl font-bold">h/{community.name}</h1>
