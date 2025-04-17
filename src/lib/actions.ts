@@ -112,9 +112,17 @@ export async function createCommunity(
     revalidatePath(`/app/h/${newCommunity[0].name}`);
 
     return { success: true, communityName: newCommunity[0].name };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Failed to create community:", error);
-    if (error.code === "23505" && error.constraint?.includes("name_key")) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "23505" &&
+      "constraint" in error &&
+      typeof error.constraint === "string" &&
+      error.constraint.includes("name_key")
+    ) {
       return {
         error:
           "A community with this name already exists (database constraint).",
@@ -141,7 +149,7 @@ function isValidUrl(url: string): boolean {
   try {
     new URL(url);
     return true;
-  } catch (_) {
+  } catch {
     return false;
   }
 }
@@ -325,10 +333,9 @@ export async function handleVote(
   if (!voteType || !voteTypeEnum.enumValues.includes(voteType as any)) {
     return { success: false, error: "Invalid Vote Type." };
   }
-  const validatedVoteType =
-    voteType as (typeof voteTypeEnum.enumValues)[number];
+  const validatedVoteType = voteType as "UPVOTE" | "DOWNVOTE";
 
-  const postPath = `/app/p/${postId}`; // Path to revalidate
+  const postPath = `/app/p/${postId}`;
 
   try {
     const existingVote = await db.query.votes.findFirst({

@@ -15,8 +15,7 @@ type Props = {
 };
 
 export default async function CommunityPage({ params }: Props) {
-  const param = await params;
-  const { communityName } = param;
+  const { communityName } = params;
 
   const [community, posts] = await Promise.all([
     getCommunityByName(communityName),

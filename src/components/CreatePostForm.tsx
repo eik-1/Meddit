@@ -48,7 +48,6 @@ export default function CreatePostForm({
 }) {
   const [medicineLinks, setMedicineLinks] = useState<string[]>([""]);
   const [imagePreviews, setImagePreviews] = useState<ImagePreview[]>([]);
-  const [formKey, setFormKey] = useState(Date.now());
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -101,12 +100,10 @@ export default function CreatePostForm({
   };
 
   useEffect(() => {
-    let didUnmount = false;
     if (state?.message && !state?.success) {
       console.error("Form submission error:", state.errors);
     }
     return () => {
-      didUnmount = true;
       imagePreviews.forEach((p) => URL.revokeObjectURL(p.url));
     };
   }, [state]);
@@ -139,7 +136,6 @@ export default function CreatePostForm({
 
       <form
         ref={formRef}
-        key={formKey}
         action={formAction}
         className="space-y-6"
         onSubmit={(e) => {
