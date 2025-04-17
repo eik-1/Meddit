@@ -21,7 +21,7 @@ import CommentList from "./CommentList";
 
 type PostViewClientProps = {
   post: PostView;
-  comments: CommentWithAuthor[];
+  comments: CommentWithAuthor[] | null;
 };
 
 function formatTimeAgo(date: Date): string {

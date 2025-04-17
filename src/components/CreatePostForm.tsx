@@ -41,8 +41,10 @@ function SubmitButton() {
 
 export default function CreatePostForm({
   communities,
+  communityName,
 }: {
   communities: Community[];
+  communityName: string;
 }) {
   const [medicineLinks, setMedicineLinks] = useState<string[]>([""]);
   const [imagePreviews, setImagePreviews] = useState<ImagePreview[]>([]);
@@ -150,7 +152,15 @@ export default function CreatePostForm({
           <Label htmlFor="communityId">
             Choose Community <span className="text-red-500">*</span>
           </Label>
-          <Select name="communityId" required defaultValue="">
+          <Select
+            name="communityId"
+            required
+            defaultValue={
+              communityName
+                ? communities.find((c) => c.name === communityName)?.id || ""
+                : ""
+            }
+          >
             <SelectTrigger
               id="communityId"
               className={state?.errors?.communityId ? "border-red-500" : ""}

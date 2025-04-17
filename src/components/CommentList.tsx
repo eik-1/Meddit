@@ -3,7 +3,7 @@ import Image from "next/image";
 import { formatDistanceToNowStrict } from "date-fns";
 
 type CommentListProps = {
-  comments: CommentWithAuthor[];
+  comments: CommentWithAuthor[] | null;
 };
 
 function formatTimeAgo(date: Date): string {

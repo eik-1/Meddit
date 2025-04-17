@@ -21,7 +21,7 @@ export default async function Sidebar() {
           <span>Home</span>
         </Link>
         <Link
-          href="/app/popular"
+          href="/app"
           className="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
         >
           <Flame className="h-5 w-5" />
