@@ -29,7 +29,7 @@ export default function HeroSection() {
         </h1>
         <p className="mt-6 text-lg md:text-xl text-stone-100 dark:text-stone-200 max-w-2xl mx-auto text-shadow">
           Discover, Share, and Validate Medical Remedies with a Community of
-          Experts and Peers. Like capybaras, we're better together!
+          Experts and Peers. Like capybaras, we&apos;re better together!
         </p>
 
         <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">

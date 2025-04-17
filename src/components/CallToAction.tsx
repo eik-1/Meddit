@@ -13,8 +13,8 @@ const CallToAction = () => {
           Ready to Feel Welcome?
         </h2>
         <p className="mb-10 text-lg text-stone-600 dark:text-stone-400 max-w-xl mx-auto">
-          Join our friendly Meddit community today. It's free to explore, share,
-          and connect.
+          Join our friendly Meddit community today. It&apos;s free to explore,
+          share, and connect.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Button

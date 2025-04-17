@@ -42,7 +42,7 @@ const Testimonials = () => {
               <CardContent className="p-8 flex-grow flex flex-col">
                 <blockquote className="flex-grow mb-6">
                   <p className="relative text-lg text-stone-700 dark:text-stone-300 leading-relaxed italic pl-3 border-l-2 border-emerald-300 dark:border-emerald-700">
-                    "{testimonial.quote}"
+                    &quot;{testimonial.quote}&quot;
                   </p>
                 </blockquote>
                 <div className="mt-auto pt-5 text-right">

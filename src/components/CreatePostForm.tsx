@@ -106,7 +106,7 @@ export default function CreatePostForm({
     return () => {
       imagePreviews.forEach((p) => URL.revokeObjectURL(p.url));
     };
-  }, [state]);
+  }, [state, imagePreviews]);
 
   return (
     <>
