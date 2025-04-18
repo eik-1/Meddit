@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
-import notFoundIllustration from "../../public/404 error.png";
+import notFoundIllustration from "../../../../../public/404 error.png";
 
 export default function NotFound() {
   return (
